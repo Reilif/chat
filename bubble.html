@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title></title>
     <style>
-        .sprechblase {
+        bubble-chat{
             position: relative;
             max-width: 40%;
             min-width: 100px;
@@ -19,7 +19,7 @@
             background: #fff;
         }
 
-        .sprechblase:before {
+        bubble-chat:before {
             content: ' ';
             position: absolute;
             width: 0;
@@ -30,7 +30,7 @@
             border-color: #2651A6 transparent transparent #2651A6;
         }
 
-        .sprechblase:after {
+        bubble-chat:after {
             content: ' ';
             position: absolute;
             width: 0;
@@ -47,13 +47,22 @@
         var BubbleProto = Object.create(HTMLElement.prototype);
 
         BubbleProto.createdCallback = function() {
-            var shadow = this.createShadowRoot();
-            shadow.innerHTML = "<b>I'm in the element's Shadow DOM!</b>";
-
-            shadow.style
         };
 
-        var XFoo = document.registerElement('x-foo-shadowdom', {prototype: XFooProto});
+        BubbleProto.attachedCallback = function() {
+            var shadow = this.createShadowRoot();
+            shadow.innerHTML = this.getAttribute('text_data');
+        };
+
+        Object.defineProperty(BubbleProto, "text_data", {value:"...", writable: true});
+        Object.defineProperty(BubbleProto, "time", {value:"1.1.79:0:00"});
+        Object.defineProperty(BubbleProto, "sender", {value:"Tom"});
+        Object.defineProperty(BubbleProto, "profil", {value:3});
+
+        var Bubble = document.registerElement('bubble-chat', {prototype: BubbleProto});
     </script>
+    <bubble-chat text="Hallo">
+
+    </bubble-chat>
 </body>
 </html>

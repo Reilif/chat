@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 <html>
 <head lang="de">
-
+    <link href="bubble.html" rel="import" />
     <title>CHAT</title>
     <style>
 
@@ -49,13 +49,48 @@
     </style>
 </head>
 <body>
-    <header>Chat for u</header>
-    <div id="main">
-        <div class="sprechblase">
 
-        </div>
+    <script>
+        var connection = new WebSocket('ws://nondes.de:8887');
+        // When the connection is open, send some data to the server
+        connection.onopen = function () {
+            connection.send('Ping'); // Send the message 'Ping' to the server
+        };
+
+        // Log errors
+        connection.onerror = function (error) {
+            console.log('WebSocket Error ' + error);
+        };
+
+        // Log messages from the server
+        connection.onmessage = function (e) {
+            console.log('Server: ' + e.data);
+            var bubble = new Bubble();
+            bubble.innerHTML = e.data;
+            document.getElementById("main").appendChild(bubble);
+        };
+    </script>
+    <header>Classtalk</header>
+    <div id="main">
+
     </div>
 
-    <footer>Bla</footer>
+    <footer>
+        <input type="text" id="tfMessage" style="width: 90%"/>
+        <button id="btSend" style="width: 9%">Senden</button>
+
+        <script>
+            var btSend = document.getElementById('btSend');
+            btSend.onclick = function(){
+                var tfMessage = document.getElementById('tfMessage');
+                var message = tfMessage.value;
+                if(message.length > 0){
+                    connection.send(message);
+                    tfMessage.value = "";
+                }
+            }
+
+        </script>
+    </footer>
 </body>
 </html>
