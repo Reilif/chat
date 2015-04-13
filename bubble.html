@@ -1,68 +1,92 @@
-<!DOCTYPE html>
-<html>
-<head lang="de">
-    <meta charset="UTF-8">
-    <title></title>
+<template>
     <style>
-        bubble-chat{
+        #sprachblase {
             position: relative;
-            max-width: 40%;
-            min-width: 100px;
-            height: 120px;
-            font-size: 1.8em;
+            max-width: 90%;
+            font-size: 1em;
             font-family: helvetica, tahoma;
             border: 4px solid #2651A6;
-            -webkit-border-radius: 20px;
-            -moz-border-radius: 20px;
-            border-radius: 20px;
-            text-align: center;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            text-align: left;
             background: #fff;
+            margin-bottom: 25px;
+            padding: 5px;
         }
 
-        bubble-chat:before {
+        #sprachblase:before {
             content: ' ';
             position: absolute;
             width: 0;
             height: 0;
             left: 30px;
-            top: 120px;
-            border: 20px solid;
+            top: 100%;
+            border: 10px solid;
             border-color: #2651A6 transparent transparent #2651A6;
         }
 
-        bubble-chat:after {
+        #sprachblase:after {
             content: ' ';
             position: absolute;
             width: 0;
             height: 0;
             left: 34px;
-            top: 120px;
-            border: 15px solid;
+            top: 100%;
+            border: 6px solid;
             border-color: #fff transparent transparent #fff;
         }
     </style>
-</head>
-<body>
-    <script>
+
+
+    <div id="sprachblase"></div>
+</template>
+
+
+<script>
+
+        // Refers to the "importer", which is index.html
+        var thatDoc = document;
+        // Refers to the "importee", which is src/hello-world.html
+        var thisDoc = (thatDoc._currentScript || thatDoc.currentScript).ownerDocument;
+
         var BubbleProto = Object.create(HTMLElement.prototype);
 
-        BubbleProto.createdCallback = function() {
+        BubbleProto.message = "Blub";
+
+        BubbleProto.createdCallback = function () {
+            // Erzeugt die ShadowRoot
+            var shadowRoot = this.createShadowRoot();
+            // Erzeugt einen Clone vom Template und hängt diesen an die ShadowRoot
+            var template = thisDoc.querySelector('template').content;
+            var clone = thatDoc.importNode(template, true);
+            shadowRoot.appendChild(clone);
+
+            // Holt sich ein Element
+            this.sprachblase = shadowRoot.getElementById("sprachblase");
+
+            // Überprüft ob das Attribut Message überschrieben wurde
+            if (this.hasAttribute('message')) {
+                var msg = this.getAttribute('message');
+                this.setMessage(msg);
+            }
+            else {
+                this.setMessage(this.message);
+            }
         };
 
-        BubbleProto.attachedCallback = function() {
-            var shadow = this.createShadowRoot();
-            shadow.innerHTML = this.getAttribute('text_data');
+        BubbleProto.attributeChangedCallback = function (attr, oldVal, newVal) {
+            if (attr === 'message') {
+                this.setMessage(newVal);
+            }
         };
 
-        Object.defineProperty(BubbleProto, "text_data", {value:"...", writable: true});
-        Object.defineProperty(BubbleProto, "time", {value:"1.1.79:0:00"});
-        Object.defineProperty(BubbleProto, "sender", {value:"Tom"});
-        Object.defineProperty(BubbleProto, "profil", {value:3});
+        // Setter für die Message
+        BubbleProto.setMessage = function (val) {
+            this.message = val;
+            // Setzt den Wert in die Content Componente
+            this.sprachblase.textContent = this.message;
+        };
 
-        var Bubble = document.registerElement('bubble-chat', {prototype: BubbleProto});
-    </script>
-    <bubble-chat text="Hallo">
-
-    </bubble-chat>
-</body>
-</html>
+        var Bubble = thisDoc.registerElement('bubble-chat', {prototype: BubbleProto});
+</script>

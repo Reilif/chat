@@ -3,7 +3,9 @@
 <meta charset="UTF-8">
 <html>
 <head lang="de">
+
     <link href="bubble.html" rel="import" />
+
     <title>CHAT</title>
     <style>
 
@@ -49,30 +51,9 @@
     </style>
 </head>
 <body>
-
-    <script>
-        var connection = new WebSocket('ws://nondes.de:8887');
-        // When the connection is open, send some data to the server
-        connection.onopen = function () {
-            connection.send('Ping'); // Send the message 'Ping' to the server
-        };
-
-        // Log errors
-        connection.onerror = function (error) {
-            console.log('WebSocket Error ' + error);
-        };
-
-        // Log messages from the server
-        connection.onmessage = function (e) {
-            console.log('Server: ' + e.data);
-            var bubble = new Bubble();
-            bubble.innerHTML = e.data;
-            document.getElementById("main").appendChild(bubble);
-        };
-    </script>
     <header>Classtalk</header>
     <div id="main">
-
+        <bubble-chat message="Willkommen im Chat"></bubble-chat>
     </div>
 
     <footer>
@@ -92,5 +73,55 @@
 
         </script>
     </footer>
+
+    <script>
+
+        function restartSession(arr) {
+            var i;
+            for(i = 0; i < arr.length; i++) {
+                newBubble(arr[i]);
+            }
+        }
+
+        function newBubble(msg){
+            var bubble = new Bubble();
+            bubble.setMessage(msg);
+            document.getElementById("main").appendChild(bubble);
+        }
+
+        var historyJSON = window.localStorage.getItem("historyJSON");
+
+        var messages = [];
+
+        if(historyJSON !== null){
+            messages = JSON.parse(historyJSON);
+            restartSession(messages);
+        }
+
+
+        window.onbeforeunload = function() {
+            var json = JSON.stringify(messages);
+            window.localStorage.setItem("historyJSON", json);
+        };
+
+        var connection = new WebSocket('ws://nondes.de:8887');
+        // When the connection is open, send some data to the server
+        connection.onopen = function () {
+        };
+
+        // Log errors
+        connection.onerror = function (error) {
+            console.log('WebSocket Error ' + error);
+        };
+
+        // Log messages from the server
+        connection.onmessage = function (e) {
+            console.log('Server: ' + e.data);
+
+            var msg = e.data;
+            newBubble(msg);
+
+            messages.push(msg);
+        };
+    </script>
 </body>
-</html>
