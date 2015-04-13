@@ -51,6 +51,11 @@
     </style>
 </head>
 <body>
+    <dialog id="name-dialog">
+        <p>Hi, bitte gib deinen Nickname ein!</p>
+        <input type="text" id="dialogIn">
+        <button id="dialogOk">Okay</button>
+    </dialog>
     <header>Classtalk</header>
     <div id="main">
         <bubble-chat message="Willkommen im Chat"></bubble-chat>
@@ -98,6 +103,20 @@
             restartSession(messages);
         }
 
+        var who = window.localStorage.getItem("name");
+
+        if(who. == null){
+            var dialog = document.getElementById("name-dialog");
+            var dialogInput = document.getElementById("dialogIn");
+            var dialogBt = document.getElementById("dialogOk");
+
+            dialog.onclick = function(e){
+                name = dialogInput.value;
+                dialog.close();
+            }
+
+            dialog.showModal();
+        }
 
         window.onbeforeunload = function() {
             var json = JSON.stringify(messages);
