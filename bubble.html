@@ -3,8 +3,10 @@
         #sprachblase {
             position: relative;
             max-width: 90%;
+            min-width: 30px;
             font-size: 1em;
             font-family: helvetica, tahoma;
+            display: table;
             border: 4px solid #2651A6;
             -webkit-border-radius: 10px;
             -moz-border-radius: 10px;
@@ -20,7 +22,7 @@
             position: absolute;
             width: 0;
             height: 0;
-            left: 30px;
+            left: 5px;
             top: 100%;
             border: 10px solid;
             border-color: #2651A6 transparent transparent #2651A6;
@@ -31,15 +33,24 @@
             position: absolute;
             width: 0;
             height: 0;
-            left: 34px;
+            left: 8px;
             top: 100%;
             border: 6px solid;
             border-color: #fff transparent transparent #fff;
         }
+
+        #sender{
+            font-style: italic;
+            font-size: 10px;
+        }
     </style>
 
 
-    <div id="sprachblase"></div>
+    <div id="sprachblase">
+        <time id="zeit" is="local-time"></time>
+        <div id="nachricht"></div>
+        <div id="sender"></div>
+    </div>
 </template>
 
 
@@ -63,7 +74,9 @@
             shadowRoot.appendChild(clone);
 
             // Holt sich ein Element
-            this.sprachblase = shadowRoot.getElementById("sprachblase");
+            this.sprachblase = shadowRoot.getElementById("nachricht");
+            this.zeit = shadowRoot.getElementById("zeit");
+            this.sender = shadowRoot.getElementById("sender");
 
             // Überprüft ob das Attribut Message überschrieben wurde
             if (this.hasAttribute('message')) {
@@ -85,7 +98,9 @@
         BubbleProto.setMessage = function (val) {
             this.message = val;
             // Setzt den Wert in die Content Componente
-            this.sprachblase.textContent = this.message;
+            this.sprachblase.textContent = this.message.what;
+            this.zeit.setAttribute("datetime", this.message.when);
+            this.sender.textContent = this.message.who;
         };
 
         var Bubble = thisDoc.registerElement('bubble-chat', {prototype: BubbleProto});

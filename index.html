@@ -4,8 +4,21 @@
 <html>
 <head lang="de">
 
+    <script src="db.js"></script>
     <link href="bubble.html" rel="import" />
 
+    <script>
+        var MegaButton = document.registerElement('mega-button', {
+            prototype: Object.create(HTMLButtonElement.prototype),
+            extends: 'button'
+        });
+    </script>
+
+    <style>
+        mega-button {
+            background-image: url("img/schwamm.jpg");
+        }
+    </style>
     <title>CHAT</title>
     <style>
 
@@ -49,8 +62,9 @@
 
 
     </style>
+
 </head>
-<body>
+<body onload= "init();">
     <dialog id="name-dialog">
         <p>Hi, bitte gib deinen Nickname ein!</p>
         <input type="text" id="dialogIn">
@@ -58,20 +72,26 @@
     </dialog>
     <header>Classtalk</header>
     <div id="main">
-        <bubble-chat message="Willkommen im Chat"></bubble-chat>
     </div>
 
     <footer>
         <input type="text" id="tfMessage" style="width: 90%"/>
-        <button id="btSend" style="width: 9%">Senden</button>
+        <button  id="btSend"  style="width: 9%">Senden</button>
 
         <script>
             var btSend = document.getElementById('btSend');
             btSend.onclick = function(){
                 var tfMessage = document.getElementById('tfMessage');
                 var message = tfMessage.value;
+
                 if(message.length > 0){
-                    connection.send(message);
+
+                    var msg = {};
+                    msg.what = message;
+                    msg.when = new Date();
+                    msg.who = who;
+
+                    connection.send(JSON.stringify(msg));
                     tfMessage.value = "";
                 }
             }
@@ -81,37 +101,24 @@
 
     <script>
 
-        function restartSession(arr) {
-            var i;
-            for(i = 0; i < arr.length; i++) {
-                newBubble(arr[i]);
-            }
-        }
-
         function newBubble(msg){
             var bubble = new Bubble();
             bubble.setMessage(msg);
             document.getElementById("main").appendChild(bubble);
+            bubble.scrollIntoView();
         }
 
-        var historyJSON = window.localStorage.getItem("historyJSON");
-
-        var messages = [];
-
-        if(historyJSON !== null){
-            messages = JSON.parse(historyJSON);
-            restartSession(messages);
-        }
 
         var who = window.localStorage.getItem("name");
 
-        if(who. == null){
+        if(who == null){
             var dialog = document.getElementById("name-dialog");
             var dialogInput = document.getElementById("dialogIn");
             var dialogBt = document.getElementById("dialogOk");
 
-            dialog.onclick = function(e){
-                name = dialogInput.value;
+            dialogBt.onclick = function(e){
+                who = dialogInput.value;
+                window.localStorage.setItem("name",who);
                 dialog.close();
             }
 
@@ -137,10 +144,10 @@
         connection.onmessage = function (e) {
             console.log('Server: ' + e.data);
 
-            var msg = e.data;
-            newBubble(msg);
+            var msg = JSON.parse(e.data);
 
-            messages.push(msg);
+            newBubble(msg);
+            wc.webdb.addMsg(msg);
         };
     </script>
 </body>

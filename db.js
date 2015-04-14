@@ -1,49 +1,66 @@
-/**
- * Created by Robin on 13.04.2015.
- */
-var html5rocks = {};
-html5rocks.webdb = {};
+var wc = {};
+wc.webdb = {};
+wc.webdb.db = null;
 
-html5rocks.webdb.db = null;
-
-html5rocks.webdb.open = function() {
+wc.webdb.open = function() {
     var dbSize = 5 * 1024 * 1024; // 5MB
-    html5rocks.webdb.db = openDatabase("Todo", "1", "Todo manager", dbSize);
+    wc.webdb.db = openDatabase("history", "1.0", "Chat manager", dbSize);
 }
 
-html5rocks.webdb.onError = function(tx, e) {
+wc.webdb.createTable = function() {
+    var db = wc.webdb.db;
+    db.transaction(function(tx) {
+        tx.executeSql("CREATE TABLE IF NOT EXISTS messages(ID INTEGER PRIMARY KEY ASC, msg TEXT, time DATETIME, who TEXT)", [],wc.webdb.onSuccessT,wc.webdb.onError);
+    });
+}
+
+wc.webdb.addMsg = function(messg) {
+    var db = wc.webdb.db;
+    db.transaction(function(tx){
+        tx.executeSql("INSERT INTO messages(msg, time, who) VALUES (?,?,?)",
+            [messg.what, messg.when, messg.who],
+            wc.webdb.onSuccessT(),
+            wc.webdb.onError);
+    });
+}
+
+wc.webdb.onError = function(tx, e) {
     alert("There has been an error: " + e.message);
 }
 
-html5rocks.webdb.onSuccess = function(tx, r) {
+wc.webdb.onSuccess = function(tx, r) {
     // re-render the data.
-    // loadTodoItems is defined in Step 4a
-    html5rocks.webdb.getAllTodoItems(loadTodoItems);
+    wc.webdb.getAllTodoItems(loadTodoItems);
 }
 
-html5rocks.webdb.createTable = function() {
-    var db = html5rocks.webdb.db;
+wc.webdb.onSuccessT = function(tx, r) {
+    // re-render the data.
+}
+
+
+wc.webdb.getAllTodoItems = function(renderFunc) {
+    var db = wc.webdb.db;
     db.transaction(function(tx) {
-        tx.executeSql("CREATE TABLE IF NOT EXISTS " +
-        "todo(ID INTEGER PRIMARY KEY ASC, todo TEXT, added_on DATETIME)", []);
+        tx.executeSql("SELECT * FROM messages", [], renderFunc,
+            wc.webdb.onError);
     });
 }
 
-html5rocks.webdb.addTodo = function(todoText) {
-    var db = html5rocks.webdb.db;
-    db.transaction(function(tx){
-        var addedOn = new Date();
-        tx.executeSql("INSERT INTO todo(todo, added_on) VALUES (?,?)",
-            [todoText, addedOn],
-            html5rocks.webdb.onSuccess,
-            html5rocks.webdb.onError);
-    });
+function loadTodoItems(tx, rs) {
+    for (var i=0; i < rs.rows.length; i++) {
+        var mess = rs.rows.item(i);
+
+        var nachricht = {};
+        nachricht.what = mess.msg;
+        nachricht.who = mess.who;
+        nachricht.when = mess.time;
+
+        newBubble(nachricht);
+    }
 }
 
-html5rocks.webdb.getAllTodoItems = function(renderFunc) {
-    var db = html5rocks.webdb.db;
-    db.transaction(function(tx) {
-        tx.executeSql("SELECT * FROM todo", [], renderFunc,
-            html5rocks.webdb.onError);
-    });
+function init() {
+    wc.webdb.open();
+    wc.webdb.createTable();
+    wc.webdb.getAllTodoItems(loadTodoItems);
 }
